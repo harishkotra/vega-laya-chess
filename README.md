@@ -8,15 +8,20 @@ wrong tool for planning and the right tool for judging a position, and chess
 gives you both cases in one place: a mate in one is already on the board, a mate
 in two needs a lookahead.
 
+<img width="2011" height="2414" alt="screencapture-127-0-0-1-8787-2026-10-16-23_19_08" src="https://github.com/user-attachments/assets/ee2d5d80-eabe-47e9-b55a-fb6af54788b4" />
+<img width="2011" height="2731" alt="screencapture-127-0-0-1-8787-2026-10-16-23_19_20" src="https://github.com/user-attachments/assets/0d815f8e-78cf-4af6-b03f-cb6a83041b7c" />
+<img width="2011" height="5205" alt="screencapture-127-0-0-1-8787-2026-10-16-23_19_30" src="https://github.com/user-attachments/assets/d3237943-a964-4941-8cf7-6ea71cd0f2e2" />
+<img width="2011" height="1744" alt="screencapture-127-0-0-1-8787-2026-10-16-23_19_38" src="https://github.com/user-attachments/assets/46598e19-579a-4106-93cb-22055198459a" />
+<img width="2011" height="2414" alt="screencapture-127-0-0-1-8787-2026-10-16-23_19_47" src="https://github.com/user-attachments/assets/4513fd74-d242-4088-bb21-f382d97b0c82" />
+<img width="1984" height="1303" alt="thumbnail" src="https://github.com/user-attachments/assets/dd0be3ab-2111-4c77-8135-7edc9aa6b7c7" />
+
+
+Video Walkthrough: [https://youtu.be/SG8nmRyBt_4](https://youtu.be/SG8nmRyBt_4)
+
 This repo is two things:
 
-- **Play**: a real game, a local decision model on each side. Vega 0.8B against
-  Laya 421M is the default match. Every ply shows the moves that model was
-  offered, its probability on each of them, whether it abstained, and how long it
-  took. Then step through the finished game in the Games tab.
-- **Benchmark**: the measured experiment. Fixed positions with ground truth
-  derived by exhaustive search, three typed questions per position, every answer
-  scored, with calibration, regret and the abstain split.
+- **Play**: a real game, a local decision model on each side. Vega 0.8B against Laya 421M is the default match. Every ply shows the moves that model was offered, its probability on each of them, whether it abstained, and how long it took. Then step through the finished game in the Games tab.
+- **Benchmark**: the measured experiment. Fixed positions with ground truth derived by exhaustive search, three typed questions per position, every answer scored, with calibration, regret and the abstain split.
 
 ```
 Play      the model chooses, under its own probabilities, in positions nobody has seen
@@ -35,9 +40,7 @@ machine:
 | **Vega 0.8B** | Nandha Kishor M's public intents checkpoint, run by `vegaml` | 73,728 tokens | up to 40 | 1.83 GB (70 MB checkpoint + 1.77 GB backbone) |
 | **Laya 421M** | Convai Innovations' multilingual checkpoint, run by `laya` | 1,024 tokens | up to 20 | 678 MB, one bundle |
 
-One forward pass per question, **zero tokens generated**, and **nothing leaves the
-machine**. There is no cloud path, no chat model and no API key anywhere in this
-app: the loaders are only ever handed a directory that is already on disk.
+One forward pass per question, **zero tokens generated**, and **nothing leaves the machine**. There is no cloud path, no chat model and no API key anywhere in this app: the loaders are only ever handed a directory that is already on disk.
 
 ---
 
@@ -64,10 +67,8 @@ app: the loaders are only ever handed a directory that is already on disk.
 
 ## Play a game
 
-Neither model searches. Each reads the position, scores the moves it is offered
-and returns one, so neither can see that a quiet move sets up something three
-moves later. The game is there to show the choices and the confidence attached to
-them, not to claim playing strength.
+Neither model searches. Each reads the position, scores the moves it is offered and returns one, so neither can see that a quiet move sets up something three
+moves later. The game is there to show the choices and the confidence attached to them, not to claim playing strength.
 
 ```
 position -> legal moves -> option set (capped, notable moves kept) -> one forward pass
@@ -77,10 +78,8 @@ position -> legal moves -> option set (capped, notable moves kept) -> one forwar
 
 Set it up on the **Play** tab:
 
-1. **White plays** and **Black plays**: any registered model, or random legal
-   moves. Vega against Laya is the default.
-2. The **option cap** (8, 12, 20 or 40 moves offered) is limited to what the
-   chosen models can read, and whether to also ask the mate questions.
+1. **White plays** and **Black plays**: any registered model, or random legal moves. Vega against Laya is the default.
+2. The **option cap** (8, 12, 20 or 40 moves offered) is limited to what the chosen models can read, and whether to also ask the mate questions.
 3. **Start**. About sixty plies takes a few minutes.
 
 Full detail, including how to read a ply, is in [docs/PLAY.md](docs/PLAY.md).
@@ -88,22 +87,15 @@ Full detail, including how to read a ply, is in [docs/PLAY.md](docs/PLAY.md).
 ## What the game shows you
 
 - **The board**, with an arrow for the last move and a checkmate badge.
-- **The move list**, the model's moves in one colour and the opponent's in
-  another, with the latency of every ply.
-- **The ply panel**: the options it was offered and how many legal moves existed,
-  its calibrated probability on each option, its confidence, whether it abstained,
-  the conformal set at the configured alpha, and the exact state text it read.
-- **The Games tab**: every game on disk, stepped through ply by ply with a slider,
-  so you can go back to the move where it went wrong and see what it was thinking.
-- **The same positions, every model**: the Benchmark tab compares the latest
-  finished run of each model side by side, on the sets they have in common.
+- **The move list**, the model's moves in one colour and the opponent's in another, with the latency of every ply.
+- **The ply panel**: the options it was offered and how many legal moves existed, its calibrated probability on each option, its confidence, whether it abstained, the conformal set at the configured alpha, and the exact state text it read.
+- **The Games tab**: every game on disk, stepped through ply by ply with a slider, so you can go back to the move where it went wrong and see what it was thinking.
+- **The same positions, every model**: the Benchmark tab compares the latest finished run of each model side by side, on the sets they have in common.
 
 ## Why the benchmark is a fair test
 
-A decision model judges the state in front of it. It cannot see that a
-locally-neutral move sets up a good one three turns later. So the experiment is
-built on the one axis where that distinction can be measured rather than
-asserted:
+A decision model judges the state in front of it. It cannot see that a locally-neutral move sets up a good one three turns later. So the experiment is
+built on the one axis where that distinction can be measured rather than asserted:
 
 | task | what it needs | why it is fair or not |
 | --- | --- | --- |
@@ -127,22 +119,16 @@ pip install -r requirements.txt
 python -m app            # UI on http://127.0.0.1:8787
 ```
 
-**Nothing is downloaded until you tick the box and press the button for that
-model.** The Setup tab gives each model its own card and says exactly what it will
-fetch, where it will put it, and how big it is: Vega is about 1.83 GB (a 63 MB
-decision engine plus a 1.77 GB frozen backbone) and Laya is 678 MB in one bundle,
-both Apache-2.0. Vega's checkpoint repository also publishes a 4B model, which the
-download allow-list skips on purpose, because this app never loads it and its
+**Nothing is downloaded until you tick the box and press the button for that model.** The Setup tab gives each model its own card and says exactly what it will
+fetch, where it will put it, and how big it is: Vega is about 1.83 GB (a 63 MB decision engine plus a 1.77 GB frozen backbone) and Laya is 678 MB in one bundle,
+both Apache-2.0. Vega's checkpoint repository also publishes a 4B model, which the download allow-list skips on purpose, because this app never loads it and its
 backbone is roughly 15 GB in float32.
 
 Then, in the UI:
 
-1. **Setup** → one card per model → tick the consent box → *Download* → *Load into
-   memory*. Vega is 1.83 GB, Laya is 678 MB. Download one or both.
-2. **Play** → pick which model plays each colour (Vega against Laya by default) →
-   *Start the game*.
-3. **Games** → step through the finished game ply by ply and read what each model
-   was thinking on each move.
+1. **Setup** → one card per model → tick the consent box → *Download* → *Load into memory*. Vega is 1.83 GB, Laya is 678 MB. Download one or both.
+2. **Play** → pick which model plays each colour (Vega against Laya by default) → *Start the game*.
+3. **Games** → step through the finished game ply by ply and read what each model was thinking on each move.
 4. **Benchmark** → pick a model and the sets, press *Run*.
 5. **Benchmark** → the board viewer, the results, and the model comparison table.
 
@@ -185,25 +171,15 @@ out["latency_ms"]                         # all three questions, one read of the
 
 The viewer is the point of the project, so it is worth describing:
 
-- **Two boards per position.** The position, and the position after the move
-  being shown. A blue arrow is what the model played, a green arrow is the move
-  that mates, violet means they are the same move. The destination square is
-  ringed on the after-board, and a **checkmate** badge appears when the move ends
-  the game.
-- **The verified line, stepped through.** For a mate in two that is three
-  clickable plies: the key move, the forced reply, the mate. Each ply redraws both
-  boards.
-- **The option set, with probabilities.** Every option with the model's
-  calibrated probability on it, tagged `verified` / `mate` / `depth N`. Click any
-  option to see where it leads.
-- **The exact prompt.** One button shows the state text and the question sheets
-  the model actually read. Nothing is hidden.
+- **Two boards per position.** The position, and the position after the move being shown. A blue arrow is what the model played, a green arrow is the move that mates, violet means they are the same move. The destination square is ringed on the after-board, and a **checkmate** badge appears when the move ends the game.
+- **The verified line, stepped through.** For a mate in two that is three clickable plies: the key move, the forced reply, the mate. Each ply redraws both boards.
+- **The option set, with probabilities.** Every option with the model's calibrated probability on it, tagged `verified` / `mate` / `depth N`. Click any option to see where it leads.
+- **The exact prompt.** One button shows the state text and the question sheets the model actually read. Nothing is hidden.
 - **A live run log.** Click any row mid-run and it opens that position on a board.
 
 ## Architecture
 
-Nothing here is a service. It is a local app: one process, a standard library
-server, static files.
+Nothing here is a service. It is a local app: one process, a standard library server, static files.
 
 ```
         data/positions/*.jsonl   (verified ground truth, sha256 in manifest.json)
@@ -241,22 +217,10 @@ server, static files.
 
 Three constraints shape everything:
 
-1. **There is no cloud path.** No chat model, no OpenAI-compatible endpoint, no
-   API key, nothing typed into a browser that leaves it. Both models are loaded
-   from a directory on this machine, and the adapters for the two families live
-   in one file so a fork can see exactly where they differ.
-2. **The benchmark path contains no chess logic at all.** Every position it draws
-   was computed by `scripts/chess_gt.py` and checked by
-   `scripts/verify_positions.py` against python-chess. A wrong picture is a data
-   bug the verifier catches, not a UI bug nobody notices.
-3. **The game path uses the app's own rules engine.** A game generates positions
-   nobody has seen, so something has to work out the legal moves. It is written
-   from scratch in `app/chess_rules.py` to keep the app MIT and dependency free,
-   and it is proved against python-chess move by move in the test suite.
-4. **A decision model is mandatory and never downloads itself.** The model
-   manager only ever loads a directory that is already on disk. Handing a loader
-   a Hub id would fetch hundreds of megabytes or more in the background, so it
-   never does.
+1. **There is no cloud path.** No chat model, no OpenAI-compatible endpoint, no API key, nothing typed into a browser that leaves it. Both models are loaded from a directory on this machine, and the adapters for the two families live in one file so a fork can see exactly where they differ.
+2. **The benchmark path contains no chess logic at all.** Every position it draws was computed by `scripts/chess_gt.py` and checked by `scripts/verify_positions.py` against python-chess. A wrong picture is a data bug the verifier catches, not a UI bug nobody notices.
+3. **The game path uses the app's own rules engine.** A game generates positions nobody has seen, so something has to work out the legal moves. It is written from scratch in `app/chess_rules.py` to keep the app MIT and dependency free, and it is proved against python-chess move by move in the test suite.
+4. **A decision model is mandatory and never downloads itself.** The model manager only ever loads a directory that is already on disk. Handing a loader a Hub id would fetch hundreds of megabytes or more in the background, so it never does.
 
 ### A run, end to end
 
@@ -287,10 +251,8 @@ UI: POST /api/run/start
 UI: GET /api/run/progress (polled), then GET /api/runs/<id> for the full run
 ```
 
-Decisions are serialized behind one lock because there is one checkpoint and one
-forward pass. A position that raises is recorded with the model's own error
-message and the run continues: a skipped position nobody can see is worse than a
-recorded failure.
+Decisions are serialized behind one lock because there is one checkpoint and one forward pass. A position that raises is recorded with the model's own error
+message and the run continues: a skipped position nobody can see is worse than a recorded failure.
 
 ## The data model
 
@@ -331,9 +293,7 @@ A position set is JSONL, one row per position, and every row is verified:
 
 Three details that matter:
 
-- `san` is the option key, with `+` and `#` stripped. Those marks are a leak: the
-  option text is part of the model's input, so `Ra8#` would hand it the answer.
-  `san_full` keeps the marks for display, after the decision is made.
+- `san` is the option key, with `+` and `#` stripped. Those marks are a leak: the option text is part of the model's input, so `Ra8#` would hand it the answer. `san_full` keeps the marks for display, after the decision is made.
 - `fen_after` is what the viewer draws. Precomputed, never derived in the browser.
 - `line` exists only on key options and is a concrete forced line to mate.
 
@@ -352,14 +312,9 @@ DEPTH_LEVELS = ["no forced checkmate within two moves",
                 "checkmate in two moves"]
 ```
 
-The `move` instruction is word for word the same on every set. If it said "which
-move mates" on the mate-in-one set and not on the quiet set, the two numbers would
-no longer be comparable.
+The `move` instruction is word for word the same on every set. If it said "which move mates" on the mate-in-one set and not on the quiet set, the two numbers would no longer be comparable.
 
-The boolean and score questions do name mate, which is why the runner can ask all
-three in **one** call (the read-once showcase) or in **three separate** calls (the
-clean measurement, since no question's wording can help another). Both are
-reported, and the difference between them is a result rather than a nuisance.
+The boolean and score questions do name mate, which is why the runner can ask all three in **one** call (the read-once showcase) or in **three separate** calls (the clean measurement, since no question's wording can help another). Both are reported, and the difference between them is a result rather than a nuisance.
 
 ## Metrics
 
@@ -412,18 +367,13 @@ node tests/board_render.mjs                                # what the board actu
 npm install jsdom --no-save && node tests/ui_harness.mjs   # drive the real UI, no browser
 ```
 
-`verify_positions.py` recomputes mate in one, mate in two, and the depth of
-**every single option**, then walks every forced line ply by ply and fails on any
-disagreement. It also checks each file's SHA-256 against `manifest.json`. Nothing
-here should be believed on the strength of the shipped labels alone.
+`verify_positions.py` recomputes mate in one, mate in two, and the depth of **every single option**, then walks every forced line ply by ply and fails on any
+disagreement. It also checks each file's SHA-256 against `manifest.json`. Nothing here should be believed on the strength of the shipped labels alone.
 
-The app's own rules engine is checked the same way, against python-chess: perft
-node counts on the six standard positions, and legal moves, SAN and FEN compared
-move for move over more than four hundred randomly reached positions. A rules bug
-that survives that is a rules bug nobody was going to find.
+The app's own rules engine is checked the same way, against python-chess: perft node counts on the six standard positions, and legal moves, SAN and FEN compared
+move for move over more than four hundred randomly reached positions. A rules bug that survives that is a rules bug nobody was going to find.
 
-The Lichess sets carry a second, independent label: the puzzle's own published
-solution. The row records whether the search agreed with it, and the fetcher
+The Lichess sets carry a second, independent label: the puzzle's own published solution. The row records whether the search agreed with it, and the fetcher
 prints the count.
 
 ## Forking and contributing
@@ -450,10 +400,8 @@ python -m pytest tests -q
 python scripts/verify_positions.py --deep-options
 ```
 
-Full details, including the row schema and how to add a question or change a
-metric, are in [docs/FORKING.md](docs/FORKING.md). The rules that exist for a
-reason: never edit a position file by hand, never invent a number, keep the
-`move` instruction identical across sets, never leak `+` or `#` into a prompt, and
+Full details, including the row schema and how to add a question or change a metric, are in [docs/FORKING.md](docs/FORKING.md). The rules that exist for a
+reason: never edit a position file by hand, never invent a number, keep the `move` instruction identical across sets, never leak `+` or `#` into a prompt, and
 keep the mock out of the shipped app.
 
 ## Features worth adding
