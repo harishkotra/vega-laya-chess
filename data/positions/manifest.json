@@ -1,0 +1,30 @@
+{
+  "generator": "scripts/make_demo_positions.py",
+  "min_legal_moves": 10,
+  "option_cap": 12,
+  "seed": 20261016,
+  "sets": {
+    "demo-mate1": {
+      "attempts": 2176,
+      "bytes": 119676,
+      "count": 40,
+      "file": "data/positions/demo-mate1.jsonl",
+      "sha256": "a9184c3be9f85f43c8efa07f5ee8818c2b1ccd831d3b5222153e03fe4919aed4"
+    },
+    "demo-mate2": {
+      "attempts": 1753,
+      "bytes": 130029,
+      "count": 40,
+      "file": "data/positions/demo-mate2.jsonl",
+      "sha256": "7107652772ff8a222f5f9619f01ba4763dff74a6077c85cbf2be5530936c1712"
+    },
+    "demo-quiet": {
+      "attempts": 93,
+      "bytes": 116894,
+      "count": 40,
+      "file": "data/positions/demo-quiet.jsonl",
+      "sha256": "fac08be0d25a4f41607683b3bb38d242834822604498a4271e365bf0f9e5e6a7"
+    }
+  },
+  "verification": "Every row was accepted only when exhaustive search returned exactly the label recorded. Re-verify with: python scripts/verify_positions.py"
+}

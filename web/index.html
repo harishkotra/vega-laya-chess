@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vega-chess: a decision model plays chess</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">&#9822;</span>
+    <div>
+      <h1>vega-chess</h1>
+      <p class="tag">A local decision model plays chess against a chat model. It does not generate text and it does not search: it picks from the moves it is offered, with a calibrated probability on each, and you can watch every choice.</p>
+    </div>
+  </div>
+  <div class="status">
+    <span id="model-pill" class="pill">checking model…</span>
+    <span id="game-pill" class="pill ghost">no game</span>
+    <span id="run-pill" class="pill ghost">no run</span>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button class="tab active" data-tab="play" role="tab">Play</button>
+  <button class="tab" data-tab="games" role="tab">Games</button>
+  <button class="tab" data-tab="benchmark" role="tab">Benchmark</button>
+  <button class="tab" data-tab="setup" role="tab">Setup</button>
+</nav>
+
+<main>
+
+<!-- ------------------------------------------------------------------- play -->
+<section id="tab-play" class="tabpane active">
+  <div class="grid two">
+    <div class="card">
+      <h2>Set up the game</h2>
+      <p class="muted">Both sides are local. Pick a decision model for each colour, or random legal moves. Nothing is sent anywhere.</p>
+
+      <div class="row wrap">
+        <label class="field"><span>white plays</span><select id="game-white"></select></label>
+        <label class="field"><span>black plays</span><select id="game-black"></select></label>
+      </div>
+      <div class="row wrap">
+        <label class="field"><span>moves offered</span>
+          <select id="game-cap">
+            <option value="8">8, a narrow choice</option>
+            <option value="12">12, the benchmark cap</option>
+            <option value="20" selected>20, the default</option>
+            <option value="40">40, nearly everything</option>
+          </select>
+        </label>
+      </div>
+      <label class="check"><input type="checkbox" id="game-ask-mate">
+        <span>also ask the mate questions every turn: a showcase of the read-once engine, and it may help it find mates</span></label>
+      <label class="field"><span>start position (FEN)</span>
+        <input id="game-fen" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></label>
+
+      <div class="row">
+        <button id="btn-game-start" class="primary">Start the game</button>
+        <button id="btn-game-stop" class="ghost" disabled>Stop</button>
+      </div>
+      <p class="note" id="game-note"></p>
+      <p class="muted" id="game-models-note"></p>
+      <p class="muted">About sixty plies takes a few minutes: every move is one forward pass of a model.</p>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items: baseline;">
+        <h2 style="margin:0">The board</h2>
+        <span class="muted" id="game-status">not started</span>
+      </div>
+      <div class="board" id="game-board"></div>
+      <div id="game-legend"></div>
+      <div id="game-result"></div>
+      <div class="row" style="justify-content: space-between;">
+        <span class="muted" id="game-players"></span>
+        <span class="muted" id="game-material"></span>
+      </div>
+      <div class="table-wrap" style="max-height:34vh">
+        <table class="tight" id="game-moves">
+          <thead><tr><th>#</th><th>white</th><th>black</th><th>ms</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>What the decision model saw and chose</h2>
+    <div id="game-last"><p class="muted">Nothing yet. Start a game.</p></div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ games -->
+<section id="tab-games" class="tabpane">
+  <div class="toolbar">
+    <label class="field inline"><span>game</span><select id="review-game"></select></label>
+    <div class="row">
+      <button id="btn-review-prev" class="ghost">‹ previous</button>
+      <button id="btn-review-next" class="ghost">next ›</button>
+      <button id="btn-games-refresh" class="ghost">refresh</button>
+    </div>
+    <span class="muted" id="review-position"></span>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h2 id="review-title">No game selected</h2>
+      <div class="board" id="review-board"></div>
+      <div id="review-legend"></div>
+      <div id="review-result"></div>
+      <label class="field"><span>ply</span><input type="range" id="review-slider" min="0" max="0" value="0"></label>
+      <div class="table-wrap" style="max-height:40vh">
+        <table class="tight" id="review-moves">
+          <thead><tr><th>#</th><th>white</th><th>black</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2>The ply in detail</h2>
+      <div id="review-detail"><p class="muted">Pick a game.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Games on this machine</h2>
+    <div id="games-list" class="sets"></div>
+  </div>
+</section>
+
+<!-- -------------------------------------------------------------- benchmark -->
+<section id="tab-benchmark" class="tabpane">
+  <div class="card">
+    <h2>Benchmark</h2>
+    <p class="muted">The measured experiment: fixed positions with ground truth derived by exhaustive search, three typed questions per position, every answer scored. This is where the numbers come from. The Play tab is where you watch it play.</p>
+  </div>
+
+  <div class="grid two">
+    <div class="card">
+      <h2>Choose the run</h2>
+      <div class="row wrap">
+        <label class="field"><span>model</span><select id="run-model"></select></label>
+        <label class="field"><span>positions per set</span><input type="number" id="run-limit" value="40" min="1" max="500"></label>
+        <label class="field"><span>readout mode</span>
+          <select id="run-mode">
+            <option value="engine" selected>engine (zero shot, calibration, conformal, abstain)</option>
+            <option value="auto">auto (uses fitted heads where they beat chance)</option>
+          </select>
+        </label>
+      </div>
+      <div id="run-sets" class="sets"></div>
+      <fieldset class="fieldset">
+        <legend>question mode</legend>
+        <label class="radio"><input type="radio" name="qmode" value="isolated" checked>
+          <span><b>isolated</b>: three calls, one question each. The clean measurement.</span></label>
+        <label class="radio"><input type="radio" name="qmode" value="combined">
+          <span><b>combined</b>: one call, three questions, one read of the state. The showcase, and a leakage test.</span></label>
+      </fieldset>
+      <div class="row wrap">
+        <label class="field"><span>conformal alpha</span><input type="number" id="run-alpha" value="0.1" step="0.05" min="0.01" max="0.5"></label>
+        <label class="field"><span>views</span><input type="number" id="run-views" value="1" min="1" max="3"></label>
+      </div>
+      <div class="row">
+        <button id="btn-start" class="primary">Run the decision model</button>
+        <button id="btn-stop" class="ghost" disabled>Stop</button>
+      </div>
+      <p class="note" id="run-note"></p>
+    </div>
+
+    <div class="card">
+      <h2>Progress</h2>
+      <div class="progress"><div class="bar" id="run-bar"></div></div>
+      <p class="muted" id="run-progress">idle</p>
+      <div class="table-wrap">
+        <table class="tight" id="run-log">
+          <thead><tr><th>#</th><th>position</th><th>its move</th><th>truth</th><th>ms</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note" id="run-error"></p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <label class="field inline"><span>run</span><select id="pos-run"></select></label>
+    <div class="filters">
+      <button class="chip active" data-filter="all">all</button>
+      <button class="chip" data-filter="miss">misses</button>
+      <button class="chip" data-filter="hit">hits</button>
+      <button class="chip" data-filter="abstain">abstained</button>
+      <button class="chip" data-filter="mate2">mate in two</button>
+    </div>
+    <span class="muted" id="pos-count"></span>
+  </div>
+
+  <div class="grid split">
+    <div class="card scroll" id="pos-list"></div>
+    <div class="card" id="pos-detail">
+      <p class="muted">Pick a run with decisions in it, then a position.</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <label class="field inline"><span>run</span><select id="res-run"></select></label>
+    <div class="row">
+      <a id="report-link" class="button ghost" href="#" download>download report.md</a>
+      <button id="btn-copy" class="ghost">copy summary</button>
+    </div>
+  </div>
+
+  <div class="card" id="featured"></div>
+  <div id="headline" class="headline"></div>
+  <div id="arm-cards" class="grid three"></div>
+
+  <div class="grid two">
+    <div class="card"><h2>Calibration</h2><p class="muted">Top probability against measured accuracy, on the move question. A perfect engine lies on the diagonal.</p><div id="reliability"></div></div>
+    <div class="card"><h2>Abstention</h2><p class="muted">The engine refuses when it is not confident enough at the configured risk. If that flag is worth anything, accuracy when it abstains is lower than accuracy when it answers.</p><div id="abstain"></div></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card"><h2>Regret, in moves</h2><p class="muted">Zero means it found the fastest mate. One means it found a mate that takes one move longer. Two or more means no mate inside two moves.</p><div id="regret"></div></div>
+    <div class="card"><h2>Latency</h2><p class="muted">Wall clock per position, including every call the mode needed.</p><div id="latency"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Every arm, every number</h2>
+    <div class="table-wrap"><table id="arm-table"></table></div>
+    <p class="note">Numbers come from the run file on disk. Re-derive the ground truth with <code>python scripts/verify_positions.py --deep-options</code>.</p>
+  </div>
+
+  <div class="card">
+    <h2>The same positions, every model</h2>
+    <p class="muted">One row per local decision model, from its latest run on the same sets. Nothing is normalised across models: the numbers are what each run file says.</p>
+    <div class="table-wrap"><table id="model-compare"></table></div>
+    <p class="note" id="model-compare-note"></p>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------------ setup -->
+<section id="tab-setup" class="tabpane">
+  <div class="card">
+    <h2>Local decision models only</h2>
+    <p class="muted">There is no cloud path and no chat model in this app. It runs decision models that are on this machine, loaded from a directory, and nothing about a decision leaves the machine. Downloading is consent gated per model: nothing is fetched until you tick the box and press the button for that model.</p>
+  </div>
+
+  <div id="setup-models" class="grid two"></div>
+
+  <div class="card">
+    <h2>What gets downloaded, and what does not</h2>
+    <h3 class="mt">Already have a checkpoint?</h3>
+    <p class="muted">If a copy is already on this machine, in this app's folder or in the Hugging Face cache, it is used as is and nothing is downloaded. Point at another copy with <code>--model-path vega=/path</code> or <code>--model-path laya=/path</code>.</p>
+    <h3 class="mt">Why the 4B is skipped</h3>
+    <p class="muted">The Vega checkpoint repository also holds a 4B model. Its backbone needs roughly 15 GB in float32 and this app never loads it, so the download allow-list excludes it. On a 16 GB machine the 0.8B is the one that fits.</p>
+    <h3 class="mt">Sets in this checkout</h3>
+    <div id="setup-sets" class="sets"></div>
+    <h3 class="mt">Command line equivalents</h3>
+    <p class="muted"><code>python -m app --device mps</code> forces the Apple silicon path. <code>python scripts/run_experiment.py --model laya</code> runs the benchmark without the UI. <code>python scripts/verify_positions.py --deep-options</code> re-derives every ground truth label.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <span>Built By <a href="https://harishkotra.me">Harish Kotra</a></span>
+  <span class="dot">·</span>
+  <span><a href="https://dailybuild.xyz">Checkout my other builds</a></span>
+  <span class="dot">·</span>
+  <span class="muted">vega-chess <span id="footer-version"></span></span>
+</footer>
+
+<script src="board.js"></script>
+<script src="charts.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

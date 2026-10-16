@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+
+# App state: runs, consent, downloaded checkpoints. None of this belongs in git.
+data/runs/
+data/model/
+data/consent.json
+*.jsonl.gz
+
+# Never commit a key, a token, or a local endpoint
+.env
+.env.*
+*.key
+secrets.json
+
+# Editors and OS noise
+.DS_Store
+.idea/
+.vscode/

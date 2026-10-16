@@ -1,0 +1,15 @@
+# The app runs local decision models, and nothing else. Both registered models
+# are listed: install both to play one against the other, or comment one out and
+# the app will name the model it is missing rather than falling back to anything.
+vegaml>=0.9.0
+laya>=0.4.8
+
+# Build tooling only: generating and verifying the position ground truth, and
+# checking the app's own rules engine against a reference implementation.
+# python-chess is GPL-3.0 and is never imported by app/ or web/.
+python-chess>=1.11 ; extra == "dev"
+pytest>=8.0 ; extra == "dev"
+
+# Optional: the Lichess puzzle fetcher (scripts/fetch_positions.py)
+pyarrow>=15.0 ; extra == "data"
+huggingface_hub>=0.23 ; extra == "data"
